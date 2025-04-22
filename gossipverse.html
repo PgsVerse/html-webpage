@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GossipVerse | PGS Verse</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="hero">
+    <h1>GossipVerse</h1>
+    <nav class="navbar">
+      <button onclick="location.href='index.html'">Home</button>
+      <button onclick="location.href='gameverse.html'">GameVerse</button>
+      <button onclick="location.href='wallofmemories.html'">Wall of Memories</button>
+    </nav>
+  </header>
+
+  <main class="main-container">
+    <section class="card">
+        <h2>Submit Your Gossip Anonymously 😶‍🌫️</h2>
+        <form id="gossipForm">
+          <textarea id="gossipInput" placeholder="Type the tea here... ☕" required></textarea>
+          <button type="submit">Spill It</button>
+        </form>
+        <p id="submissionMsg" style="margin-top: 10px; display: none;">Your gossip has been submitted 👀</p>
+      </section>
+
+      <script>
+        const form = document.getElementById('gossipForm');
+        const input = document.getElementById('gossipInput');
+        const msg = document.getElementById('submissionMsg');
+      
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+          
+          const gossip = input.value;
+      
+          fetch("https://script.google.com/macros/s/AKfycbwa7Xj_7R2VFaAzdhTByqTnlMsWThvwJnbDhhX5fKHSicnWRHxZDErVBqpotfMjVTmy7Q/exec", {
+            method: "POST",
+            mode: "no-cors",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: `gossip=${encodeURIComponent(gossip)}`,
+          }).then(() => {
+            form.reset();
+            form.style.display = 'none';
+            msg.style.display = 'block';
+          });
+        });
+      </script>
+      
+      
+      
+    <section class="card">
+      <h2>Spill the Tea ☕</h2>
+      <p>This is where all the spicy drama, anonymous confessions, and student rumors come alive.  
+      Stay tuned for updates or submit your own stories!</p>
+      <p style="font-style: italic;">(*Submissions coming soon)</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 PGS Verse | Stay juicy 🍇</p>
+  </footer>
+
+</body>
+</html>

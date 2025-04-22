@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wall of Memories | PGS Verse</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="hero">
+    <h1>Wall of Memories</h1>
+    <nav class="navbar">
+      <button onclick="location.href='index.html'">Home</button>
+      <button onclick="location.href='gossipverse.html'">GossipVerse</button>
+      <button onclick="location.href='gameverse.html'">GameVerse</button>
+    </nav>
+  </header>
+
+  <main class="main-container">
+
+    <section class="card">
+        <h2>Add Yourself to the Wall 🧱</h2>
+        <form id="memoryForm">
+          <input type="text" id="name" placeholder="Your Name" required />
+          <input type="text" id="class" placeholder="Class (e.g., 10A)" required />
+          
+          <select id="batch" required>
+            <option value="" disabled selected>Select Your Batch</option>
+            <option value="2021-22">2021-22</option>
+            <option value="2022-23">2022-23</option>
+            <option value="2023-24">2023-24</option>
+            <option value="2024-25">2024-25</option>
+            <option value="2025-26">2025-26</option>
+          </select>
+          
+          
+          <input type="number" id="age" placeholder="Age" required />
+          <textarea id="note" placeholder="Write a note about yourself..." required></textarea>
+          <button type="submit">Add to Wall</button>
+        </form>
+        <p id="memSubmitMsg" style="margin-top: 10px; display: none;">You're now on the Wall of Memories 💜</p>
+        <p id="memErrorMsg" style="color: red; display: none;">Only Class 10 and above are allowed to post 😢</p>
+      </section>
+      
+
+    <section class="card">
+      <h2>Sign Your Legacy ✍️</h2>
+      <p>This is where memories live on — leave your name, your words, your essence.  
+      Soon you'll be able to submit and view messages left by others too.</p>
+      <p style="font-style: italic;">(*Coming soon: Submit Note + View Notes)</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 PGS Verse | Legends never fade 🌟</p>
+  </footer>
+
+
+    <!-- Your Wall of Memories form above -->
+
+  <!-- JS BLOCK GOES HERE -->
+  
+  <script>
+    const form = document.getElementById('memoryForm');
+    const msg = document.getElementById('memSubmitMsg');
+  
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+  
+      const data = {
+        name: document.getElementById('name').value,
+        class: document.getElementById('class').value,
+        group: document.getElementById('group').value,
+        age: document.getElementById('age').value,
+        note: document.getElementById('note').value
+      };
+  
+      fetch("https://script.google.com/macros/s/AKfycbwYlTa8REgM_AjUMDHsasO0pOu4dszgMSH5p5utJNdBtlKWXanFDgmLU3NjzO2qlhnT/exec", {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: Object.entries(data).map(([key, val]) => `${key}=${encodeURIComponent(val)}`).join('&')
+      }).then(() => {
+        form.reset();
+        form.style.display = 'none';
+        msg.style.display = 'block';
+      });
+    });
+  </script>
+  
+
+</body>
+</html>
+

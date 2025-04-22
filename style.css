@@ -1,0 +1,223 @@
+:root {
+  --violet: #7c3aed;
+  --violet-light: #ede9fe;
+  --white: #ffffff;
+  --black: #1e1e1e;
+  --gold: #facc15;
+  --glass: rgba(255, 255, 255, 0.2);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to right, #f8f7ff, #e5e1ff);
+  color: var(--black);
+  min-height: 100vh;
+}
+
+/* 🔮 HERO SECTION */
+.hero {
+  background: var(--violet);
+  color: var(--white);
+  padding: 2rem 1rem;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.hero h1 {
+  font-size: 2.5rem;
+  letter-spacing: 1px;
+  margin-bottom: 1rem;
+}
+
+/* 🧭 NAV BAR */
+.navbar {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.navbar button {
+  background-color: var(--white);
+  color: var(--violet);
+  border: none;
+  padding: 0.6rem 1.2rem;
+  font-weight: bold;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: 0.3s;
+}
+
+.navbar button:hover {
+  background-color: var(--gold);
+  color: var(--black);
+}
+
+/* 🌟 MAIN CONTAINER */
+.main-container {
+  display: grid;
+  gap: 2rem;
+  padding: 3rem 2rem;
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* 🧊 CARDS */
+.card {
+  background: var(--white);
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: 0.3s ease;
+  backdrop-filter: blur(8px);
+  border: 2px solid var(--violet-light);
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* ✨ HEADINGS & TEXT */
+.card h2 {
+  color: var(--violet);
+  font-size: 1.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.card p {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+/* 🎯 BUTTONS */
+.card-btn {
+  background-color: var(--violet);
+  color: var(--white);
+  padding: 0.7rem 1.4rem;
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: 0.3s ease;
+}
+
+.card-btn:hover {
+  background-color: var(--gold);
+  color: var(--black);
+}
+
+/* 🦶 FOOTER */
+footer {
+  background-color: var(--black);
+  color: var(--white);
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.9rem;
+  margin-top: 3rem;
+}
+
+/* 📱 MOBILE RESPONSIVE */
+@media (max-width: 768px) {
+  .main-container {
+    grid-template-columns: 1fr;
+    padding: 2rem 1rem;
+  }
+
+  .card h2 {
+    font-size: 1.5rem;
+  }
+
+  .hero h1 {
+    font-size: 2rem;
+  }
+}
+
+
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+textarea {
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  resize: vertical;
+  min-height: 100px;
+  font-family: 'Arial', sans-serif;
+  font-size: 1rem;
+  background-color: #eee6fa;
+  color: #3c2a4d;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+}
+
+form button {
+  padding: 10px 20px;
+  background-color: #9c27b0;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  transition: background-color 0.3s;
+  cursor: pointer;
+}
+
+form button:hover {
+  background-color: #6d1b7b;
+}
+
+
+
+#memoryForm input, #memoryForm textarea {
+  width: 100%;
+  padding: 12px;
+  margin: 5px 0;
+  border-radius: 10px;
+  border: none;
+  background-color: #f3e5f5;
+  font-family: 'Arial', sans-serif;
+}
+
+#memoryForm textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+#memoryForm button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background-color: #7e57c2;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#memoryForm button:hover {
+  background-color: #5e35b1;
+}
+
+
+#memoryForm select {
+  width: 100%;
+  padding: 12px;
+  margin: 5px 0;
+  border-radius: 10px;
+  border: none;
+  background-color: #f3e5f5;
+  font-family: 'Arial', sans-serif;
+}
