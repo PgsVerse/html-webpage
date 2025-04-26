@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>VIP Lounge | PGS Verse</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --violet: #7c3aed;
+      --violet-light: #ede9fe;
+      --white: #ffffff;
+      --black: #1e1e1e;
+      --gold: #facc15;
+      --glass: rgba(255, 255, 255, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #f8f7ff, #e5e1ff);
+      color: var(--black);
+      min-height: 100vh;
+    }
+
+    .vip-gate {
+      text-align: center;
+      padding: 3rem 2rem;
+      max-width: 600px;
+      margin: 6rem auto;
+      background: var(--white);
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .vip-gate h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: var(--violet);
+    }
+
+    .vip-gate input {
+      padding: 0.7rem;
+      width: 80%;
+      max-width: 300px;
+      margin-top: 1rem;
+      border-radius: 10px;
+      border: none;
+      background-color: #f3e5f5;
+      font-size: 1rem;
+    }
+
+    .vip-gate button {
+      margin-top: 1rem;
+      padding: 0.7rem 1.4rem;
+      background-color: var(--violet);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .vip-gate button:hover {
+      background-color: var(--gold);
+      color: black;
+    }
+
+    .main-container {
+      display: grid;
+      gap: 2rem;
+      padding: 3rem 2rem;
+      max-width: 900px;
+      margin: auto;
+      display: none;
+    }
+
+    .card {
+      background: var(--white);
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      transition: 0.3s ease;
+      border: 2px solid var(--violet-light);
+    }
+
+    .card h2 {
+      color: var(--violet);
+      font-size: 1.8rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .card p {
+      font-size: 1.1rem;
+      color: #333;
+    }
+
+    .back-home {
+      display: inline-block;
+      margin-top: 2rem;
+      background-color: var(--black);
+      color: var(--white);
+      padding: 0.7rem 1.4rem;
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: bold;
+      transition: 0.3s ease;
+    }
+
+    .back-home:hover {
+      background-color: var(--gold);
+      color: var(--black);
+    }
+
+    @media (max-width: 768px) {
+      .main-container {
+        padding: 2rem 1rem;
+      }
+
+      .card h2 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 🔐 GATE -->
+  <div id="gate" class="vip-gate">
+    <h2>🔒 VIP Lounge Access</h2>
+    <p>Enter your passcode to unlock the drops.</p>
+    <input type="password" id="vipPass" placeholder="Enter Passcode">
+    <br>
+    <button onclick="unlockVIP()">Enter</button>
+    <p id="errorMsg" style="color: red; display: none;">Wrong passcode. Try again.</p>
+  </div>
+
+
+
+  <!-- 🌟 VIP CONTENT -->
+  <main id="vipContent" class="main-container">
+    <section class="card">
+        <h2>🎉 Welcome to the VIP Lounge</h2>
+        <p>This area is exclusive. Stay tuned for:</p>
+        <ul style="text-align: left; max-width: 600px; margin: 1rem auto;">
+          <li>🔓 <b>Secret gossip drops</b></li><br>
+          <li>🕵️‍♂️ <b>Clues for future challenges</b></li><br>
+          <li>🎮 <b>Early access to GameVerse brackets</b></li><br>
+          <li>🎁 <b>Downloadables, wallpapers, or hidden memes</b></li><br>
+          <li>🔥 <b>Easter eggs & exclusive events</b></li>
+        </ul>
+    </section>
+
+    <a href="index.html" class="back-home">⬅ Back to Homepage</a>
+  </main>
+
+  <!-- 🧠 Script -->
+  <script>
+    function unlockVIP() {
+      const input = document.getElementById("vipPass").value.trim();
+      if (input === "Verse2204") {
+        document.getElementById("vipContent").style.display = "grid";
+        document.getElementById("gate").style.display = "none";
+      } else {
+        document.getElementById("errorMsg").style.display = "block";
+      }
+    }
+
+  </script>
+
+
+
+</body>
+</html>
