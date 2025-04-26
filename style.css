@@ -144,80 +144,81 @@ footer {
 
 
 
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+
+
+
+input[type="password"] {
+  padding: 0.8rem;
+  border-radius: 10px;
+  border: none;
+  width: 100%;
+  max-width: 300px;
+  margin-bottom: 1rem;
+  background-color: #f0e8ff;
 }
 
-textarea {
-  padding: 12px;
+button {
+  padding: 0.7rem 1.2rem;
+  background-color: var(--violet);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: var(--gold);
+  color: black;
+}
+
+
+
+
+
+
+.back-home-btn {
+  display: inline-block;
+  margin-bottom: 2rem;
+  background-color: var(--violet);
+  color: var(--white);
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
+  font-weight: bold;
+  text-decoration: none;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.back-home-btn:hover {
+  background-color: var(--gold);
+  color: var(--black);
+  transform: translateY(-2px);
+}
+
+
+
+
+
+
+
+textarea#gossipInput {
+  width: 100%;
+  height: 120px;
+  padding: 15px;
+  border: 2px solid #a170ff; /* violet border */
   border-radius: 12px;
-  border: none;
-  resize: vertical;
-  min-height: 100px;
-  font-family: 'Arial', sans-serif;
-  font-size: 1rem;
-  background-color: #eee6fa;
-  color: #3c2a4d;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+  background-color: #f9f5ff;
+  font-size: 16px;
+  font-family: 'Poppins', sans-serif;
+  resize: none;
+  outline: none;
+  box-shadow: 0 4px 12px rgba(161, 112, 255, 0.2);
+  transition: 0.3s ease;
 }
 
-form button {
-  padding: 10px 20px;
-  background-color: #9c27b0;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-weight: bold;
-  transition: background-color 0.3s;
-  cursor: pointer;
-}
-
-form button:hover {
-  background-color: #6d1b7b;
-}
-
-
-
-#memoryForm input, #memoryForm textarea {
-  width: 100%;
-  padding: 12px;
-  margin: 5px 0;
-  border-radius: 10px;
-  border: none;
-  background-color: #f3e5f5;
-  font-family: 'Arial', sans-serif;
-}
-
-#memoryForm textarea {
-  min-height: 80px;
-  resize: vertical;
-}
-
-#memoryForm button {
-  margin-top: 10px;
-  padding: 10px 20px;
-  background-color: #7e57c2;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-#memoryForm button:hover {
-  background-color: #5e35b1;
-}
-
-
-#memoryForm select {
-  width: 100%;
-  padding: 12px;
-  margin: 5px 0;
-  border-radius: 10px;
-  border: none;
-  background-color: #f3e5f5;
-  font-family: 'Arial', sans-serif;
+textarea#gossipInput:focus {
+  border-color: #7a42ff;
+  box-shadow: 0 6px 16px rgba(122, 66, 255, 0.3);
+  background-color: #ffffff;
 }
