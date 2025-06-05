@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>GossipVerse</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="logo">PGSVerse</a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="signin.html">Sign In</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- GOSSIPVERSE -->
+  <section class="section alt" style="padding-top:6rem;">
+    <div class="container">
+      <h2>GossipVerse</h2>
+      <p>Spill all the tea—drop your juiciest campus hot-takes & rumors. (Sign-in required.)</p>
+
+      <div class="form-card">
+        <textarea id="gossipInput" rows="4" placeholder="Your gossip…"></textarea>
+        <!-- this is now a real button -->
+        <button id="postGossipBtn" type="button" class="btn">Post Gossip</button>
+      </div>
+    </div>
+  </section>
+
+  <script type="module">
+    // Firebase imports
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-auth.js";
+    // Your config + init (same as before)
+    const firebaseConfig = { /* … */ };
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Hook the button
+    document.getElementById('postGossipBtn').addEventListener('click', postGossip);
+
+    async function postGossip() {
+      const text = document.getElementById('gossipInput').value.trim();
+      if (!text) return alert('Type something!');
+      const user = auth.currentUser;
+      if (!user) return alert('Please sign in first.');
+      // call your Apps Script endpoint (make sure API_URL is set)
+      const res = await fetch(`${API_URL}?path=gossip`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          userId: user.uid,
+          userName: user.displayName,
+          text
+        })
+      });
+      const json = await res.json();
+      if (json.status === 'ok') {
+        alert('Gossip submitted! ☕');
+        document.getElementById('gossipInput').value = '';
+      } else {
+        alert('Error: ' + (json.error||'unknown'));
+      }
+    }
+  </script>
+</body>
+</html>
