@@ -1,36 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TalkVerse</title>
-  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .thread-box, .reply-box {
+      background: #1e1e1e;
+      color: white;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 10px;
+    }
+    .reply-input {
+      display: flex;
+      gap: 10px;
+      margin-top: 0.5rem;
+    }
+    .reply-input textarea {
+      flex: 1;
+      padding: 0.5rem;
+      border-radius: 6px;
+    }
+    .btn {
+      background: #00ffcc;
+      color: black;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: #00c2a6;
+    }
+  </style>
 </head>
 <body>
-  <!-- NAVBAR -->
   <nav class="navbar">
     <div class="container">
       <a href="index.html" class="logo">PGSVerse</a>
-      <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="signin.html">Sign In</a></li>
-        <li><a href="dashboard.html">Dashboard</a></li>
-      </ul>
+      <ul class="nav-links" id="nav-links">
+  <!-- Navbar will load here -->
+</ul>
+
     </div>
   </nav>
 
-  <!-- TALKVERSE -->
-  <section class="section" style="padding-top:6rem;">
+  <section class="section alt" style="padding-top:6rem;">
     <div class="container">
       <h2>TalkVerse</h2>
-      <p>Join X-style forums on notes, games, classes, timepass nd roast battles.</p>
-      <div id="threads">
-        <!-- JS will inject threads here -->
+      <p>Join X-style forums on notes, games, classes, timepass nd roast battles. (sign in to talk)</p>
+
+      <div id="newThreadContainer" style="margin-bottom: 20px; display: none;">
+        <textarea id="newThreadInput" rows="2" placeholder="Start a new thread..."></textarea>
+        <button class="btn" id="createThreadBtn">Post Thread</button>
       </div>
-      <button class="btn" onclick="startNewThread()">New Thread</button>
+
+      <div id="threads"></div>
     </div>
   </section>
 
-  <script src="js/main.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, doc, getDocs, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDuoQs8ntO6ityQsMeMwMulk9mO2m4ScVI",
+      authDomain: "verse-96d1b.firebaseapp.com",
+      projectId: "verse-96d1b",
+      storageBucket: "verse-96d1b.appspot.com",
+      messagingSenderId: "442515393829",
+      appId: "1:442515393829:web:049678d9cb119d4146decc"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const adminEmails = ["pgsverse@gmail.com"];
+
+    const threadsContainer = document.getElementById("threads");
+    const newThreadContainer = document.getElementById("newThreadContainer");
+    const newThreadInput = document.getElementById("newThreadInput");
+    const createThreadBtn = document.getElementById("createThreadBtn");
+
+    let currentUser = null;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        if (adminEmails.includes(user.email)) {
+          newThreadContainer.style.display = "block";
+        }
+      }
+    });
+
+    createThreadBtn.addEventListener("click", async () => {
+      const content = newThreadInput.value.trim();
+      if (!content || !currentUser) return alert("Thread content required");
+      await addDoc(collection(db, "threads"), {
+        content,
+        createdBy: currentUser.displayName || currentUser.email,
+        timestamp: new Date()
+      });
+      newThreadInput.value = "";
+    });
+
+    const threadQuery = query(collection(db, "threads"), orderBy("timestamp", "desc"));
+    onSnapshot(threadQuery, async (snapshot) => {
+      threadsContainer.innerHTML = "";
+      snapshot.forEach(docSnap => {
+        const thread = docSnap.data();
+        const threadId = docSnap.id;
+
+        const threadEl = document.createElement("div");
+        threadEl.className = "thread-box";
+        threadEl.innerHTML = `
+          <p><strong>${thread.createdBy}</strong>: ${thread.content}</p>
+          <div class="reply-input">
+            <textarea rows="1" placeholder="Reply..."></textarea>
+            <button class="btn">Send</button>
+          </div>
+          <div class="replies" id="replies-${threadId}"></div>
+        `;
+
+        threadEl.querySelector("button").addEventListener("click", async () => {
+          const replyText = threadEl.querySelector("textarea").value.trim();
+          if (!replyText || !currentUser) return;
+          await addDoc(collection(db, "threads", threadId, "replies"), {
+            text: replyText,
+            user: currentUser.displayName || currentUser.email,
+            timestamp: new Date()
+          });
+          threadEl.querySelector("textarea").value = "";
+        });
+
+        // Load replies
+        const replyQuery = query(collection(db, "threads", threadId, "replies"), orderBy("timestamp"));
+        onSnapshot(replyQuery, (replySnap) => {
+          const replyDiv = threadEl.querySelector(`#replies-${threadId}`);
+          replyDiv.innerHTML = "";
+          replySnap.forEach(reply => {
+            const r = reply.data();
+            const replyEl = document.createElement("p");
+            replyEl.className = "reply-box";
+            replyEl.innerHTML = `<strong>${r.user}</strong>: ${r.text}`;
+            replyDiv.appendChild(replyEl);
+          });
+        });
+
+        threadsContainer.appendChild(threadEl);
+      });
+    });
+  </script>
+  <script type="module" src="js/navbar.js"></script>
+
 </body>
 </html>
