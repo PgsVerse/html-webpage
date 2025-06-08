@@ -11,31 +11,37 @@
   <nav class="navbar">
     <div class="container">
       <a href="index.html" class="logo">PGSVerse</a>
-      <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="signin.html">Sign In</a></li>
-        <li><a href="dashboard.html">Dashboard</a></li>
-      </ul>
+      <ul class="nav-links" id="nav-links">
+  <!-- Navbar will load here -->
+</ul>
+
     </div>
   </nav>
 
   <section class="section" style="padding-top:6rem;">
-    <div class="container">
-      <h2>StudyVerse</h2>
-      <p>Browse & submit study notes, exam files & resources. Earn Vcoins per upload.</p>
+  <div class="container">
+    <h2>StudyVerse</h2>
+    <p>Browse & submit study notes, exam files & resources. Earn Vcoins per upload.</p>
+    <p style="font-size: 14px; color: #aaa;">
+      Earn <strong>+100 VCoins</strong> per upload, <strong>+5</strong> per request, and <strong>+500</strong> if you provide requested notes!
+    </p>
 
-      <div class="form-card">
-        <input type="file" id="fileUpload"/>
-        <button class="btn" onclick="uploadFile()">Upload File</button>
-      </div>
-
-      <h3>Available Resources</h3>
-      <ul id="fileList">
-        <!-- JS will render list items with download links -->
-      </ul>
+    <div class="form-card">
+      <input type="file" id="fileUpload" />
+      <button class="btn" onclick="uploadFile()">Upload File</button>
     </div>
-  </section>
 
-  <script src="js/main.js"></script>
+    <h3>Available Resources</h3>
+    <ul id="fileList" style="list-style: none; padding: 0;"></ul>
+
+    <h3 style="margin-top: 2rem;">📥 Request Notes</h3>
+    <input type="text" id="noteRequestInput" placeholder="Type your request…" style="width: 100%; padding: 0.5rem; margin-bottom: 1rem;" />
+    <button class="btn" onclick="submitNoteRequest()">Submit Request</button>
+  </div>
+</section>
+
+<script type="module" src="js/study.js"></script>
+  <script type="module" src="js/navbar.js"></script>
+
 </body>
 </html>
