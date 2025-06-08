@@ -17,6 +17,16 @@
         <li><a href="#" id="signOutBtn">Sign Out</a></li>
       </ul>
     </div>
+    
+    <div style="position: relative;">
+      <button id="notif-bell">🔔</button>
+      <div id="notif-dropdown" class="hidden">
+        <ul id="notif-list"></ul>
+      </div>
+    </div>
+
+    <!-- Load Notifications -->
+    <script type="module" src="notifications.js"></script>
   </nav>
 
   <!-- PROFILE DISPLAY -->
@@ -29,16 +39,22 @@
       <p><strong>Class:</strong>  <span id="profClass"></span></p>
       <p><strong>Vcoins:</strong> <span id="profCoins"></span></p>
       <p><strong>Badges:</strong> <span id="profBadges"></span></p>
+
+      <!-- 🪙 Welcome Bonus Button -->
+      <div style="margin-top: 20px;">
+        <button onclick="claimCoins()">🎁 Claim 10 VCoins</button>
+      </div>
     </div>
   </section>
 
+  <!-- FIREBASE + VCoin Script -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
     import {
       getAuth, onAuthStateChanged, signOut
     } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-auth.js";
     import {
-      getFirestore, doc, getDoc
+      getFirestore, doc, getDoc, updateDoc, increment, Timestamp
     } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js";
 
     // Firebase init
@@ -55,22 +71,103 @@
     const auth = getAuth(app);
     const db   = getFirestore(app);
 
-    // Sign out link
+    // Sign out
     document.getElementById('signOutBtn').onclick = () =>
       signOut(auth).then(() => location.replace('signin.html'));
 
-    // Auth guard + load profile
+    // 🎁 Daily login bonus
+    async function giveLoginBonus(user) {
+      const userRef = doc(db, 'users', user.uid);
+      const snap = await getDoc(userRef);
+      const data = snap.data() || {};
+      const today = new Date().toDateString();
+      const lastLogin = data.lastLoginReward;
+
+      if (lastLogin !== today) {
+        await updateDoc(userRef, {
+          vcoins: increment(5),
+          lastLoginReward: today
+        });
+        alert("🎉 Daily login bonus: +5 VCoins!");
+        document.getElementById('profCoins').textContent = (data.vcoins || 0) + 5;
+      }
+    }
+
+    // ✅ One-time claim button
+    window.claimCoins = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const userRef = doc(db, "users", user.uid);
+      const snap = await getDoc(userRef);
+      const data = snap.data() || {};
+
+      if (data.claimedWelcomeBonus) {
+        alert("You've already claimed your 10 VCoins bonus.");
+        return;
+      }
+
+      await updateDoc(userRef, {
+        vcoins: increment(10),
+        claimedWelcomeBonus: true
+      });
+
+      alert("You earned 10 VCoins!");
+      document.getElementById("profCoins").textContent = (data.vcoins || 0) + 10;
+      document.querySelector("button[onclick='claimCoins()']").style.display = "none";
+    };
+
+    // 👤 Load profile + bonuses
     onAuthStateChanged(auth, async user => {
       if (!user) return location.replace('signin.html');
       const snap = await getDoc(doc(db,'users',user.uid));
       const d    = snap.data() || {};
+
+      // 🎯 Profile completion bonus
+      const hasName  = d.name && d.name.trim() !== "";
+      const hasRole  = d.role && d.role.trim() !== "";
+      const hasClass = d.class && d.class.trim() !== "";
+
+      if (hasName && hasRole && hasClass && !d.claimedProfileBonus) {
+        const userRef = doc(db, "users", user.uid);
+        await updateDoc(userRef, {
+          vcoins: increment(20),
+          claimedProfileBonus: true
+        });
+        alert("🎉 Profile completed! You earned +20 VCoins!");
+        d.vcoins = (d.vcoins || 0) + 20;
+      }
+
+      // 💾 Fill profile display
       document.getElementById('profName').textContent   = d.name;
       document.getElementById('profEmail').textContent  = d.email;
       document.getElementById('profRole').textContent   = d.role;
       document.getElementById('profClass').textContent  = d.class;
       document.getElementById('profCoins').textContent  = d.vcoins;
       document.getElementById('profBadges').textContent = (d.badges || []).join(', ') || 'None';
+
+      // 🎁 Hide claim button if used
+      if (d.claimedWelcomeBonus) {
+        document.querySelector("button[onclick='claimCoins()']").style.display = "none";
+      }
+
+      // 🕒 Daily login reward
+      await giveLoginBonus(user);
     });
+
+    // 🔁 Universal VCoin updater
+    async function updateVCoins(amount) {
+      const user = auth.currentUser;
+      if (!user) return;
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, {
+        vcoins: increment(amount)
+      });
+
+      const snap = await getDoc(userRef);
+      const updated = snap.data().vcoins;
+      document.getElementById('profCoins').textContent = updated;
+    }
   </script>
 </body>
 </html>
