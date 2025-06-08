@@ -48,99 +48,100 @@
   </div>
 
   <script type="module">
-    // 1) Firebase imports
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
-    import {
-      getAuth, GoogleAuthProvider,
-      signInWithPopup, onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-auth.js";
-    import {
-      getFirestore, doc,
-      setDoc, getDoc
-    } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
+import {
+  getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/11.7.3/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, setDoc
+} from "https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js";
 
-    // 2) Init Firebase
-    const cfg = {
-      apiKey: "AIzaSyDuoQs8ntO6ityQsMeMwMulk9mO2m4ScVI",
-      authDomain: "verse-96d1b.firebaseapp.com",
-      projectId: "verse-96d1b",
-      storageBucket: "verse-96d1b.appspot.com",
-      messagingSenderId: "442515393829",
-      appId: "1:442515393829:web:049678d9cb119d4146decc",
-      measurementId: "G-3C74806Q83"
-    };
-    const app      = initializeApp(cfg);
-    const auth     = getAuth(app);
-    const provider = new GoogleAuthProvider();
-    const db       = getFirestore(app);
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyDuoQs8ntO6ityQsMeMwMulk9mO2m4ScVI",
+  authDomain: "verse-96d1b.firebaseapp.com",
+  projectId: "verse-96d1b",
+  storageBucket: "verse-96d1b.appspot.com",
+  messagingSenderId: "442515393829",
+  appId: "1:442515393829:web:049678d9cb119d4146decc"
+};
+const app      = initializeApp(firebaseConfig);
+const auth     = getAuth(app);
+const db       = getFirestore(app);
+const provider = new GoogleAuthProvider();
 
-    // 3) UI elements
-    const signInContainer = document.getElementById('signInContainer');
-    const profileContainer= document.getElementById('profileContainer');
-    const signInBtn       = document.getElementById('signInBtn');
-    const classLabel      = document.getElementById('classLabel');
-    const inpRole         = document.getElementById('inpRole');
-    const inpName         = document.getElementById('inpName');
-    const inpClass        = document.getElementById('inpClass');
-    const profileForm     = document.getElementById('profileForm');
+// UI Elements
+const signInContainer = document.getElementById('signInContainer');
+const profileContainer = document.getElementById('profileContainer');
+const classLabel = document.getElementById('classLabel');
+const inpRole = document.getElementById('inpRole');
+const inpName = document.getElementById('inpName');
+const inpClass = document.getElementById('inpClass');
+const profileForm = document.getElementById('profileForm');
 
-    // 4) Show/hide class dropdown
-    inpRole.addEventListener('change', () => {
-      classLabel.style.display = inpRole.value === 'Student' ? 'block' : 'none';
-    });
+// Show/hide class input
+inpRole.addEventListener('change', () => {
+  classLabel.style.display = inpRole.value === 'Student' ? 'block' : 'none';
+});
 
-    // 5) Sign-in button
-    signInBtn.addEventListener('click', async () => {
-      try {
-        const { user } = await signInWithPopup(auth, provider);
-        await setDoc(doc(db,'users',user.uid), {
-          name:   user.displayName,
-          email:  user.email,
-          vcoins: 500,
-          role:   null,
-          class:  null,
-          badges: []
-        }, { merge: true });
-        // onAuthStateChanged will fire next
-      } catch(e) {
-        alert('Sign-in failed: ' + e.message);
-      }
-    });
+// Sign in with Google
+document.getElementById('signInBtn').addEventListener('click', async () => {
+  try {
+    const { user } = await signInWithPopup(auth, provider);
+    const userRef = doc(db, 'users', user.uid);
+    const docSnap = await getDoc(userRef);
+    
+    if (!docSnap.exists()) {
+      // First time: save partial data
+      await setDoc(userRef, {
+        name: user.displayName,
+        email: user.email,
+        vcoins: 500,
+        role: null,
+        class: null,
+        badges: [],
+        createdAt: new Date().toISOString()
+      });
+    }
+  } catch (e) {
+    alert('Sign-in failed: ' + e.message);
+  }
+});
 
-    // 6) Profile form submit
-    profileForm.addEventListener('submit', async e => {
-      e.preventDefault();
-      const user = auth.currentUser;
-      if (!user) return location.reload();
-      await setDoc(doc(db,'users',user.uid), {
-        name:  inpName.value.trim(),
-        role:  inpRole.value,
-        class: inpClass.value || null
-      }, { merge: true });
+// Submit form
+profileForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  const user = auth.currentUser;
+  if (!user) return;
+
+  await setDoc(doc(db, 'users', user.uid), {
+    name: inpName.value.trim(),
+    role: inpRole.value,
+    class: inpClass.value || null
+  }, { merge: true });
+
+  location.href = 'dashboard.html';
+});
+
+// Auto routing
+onAuthStateChanged(auth, async user => {
+  if (!user) {
+    signInContainer.style.display = 'block';
+    profileContainer.style.display = 'none';
+  } else {
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    const d = snap.data() || {};
+
+    if (!d.role || !d.name) {
+      inpName.value = d.name || '';
+      signInContainer.style.display = 'none';
+      profileContainer.style.display = 'block';
+    } else {
       location.href = 'dashboard.html';
-    });
+    }
+  }
+});
+</script>
 
-    // 7) Auth guard & flow
-    onAuthStateChanged(auth, async user => {
-      if (!user) {
-        // not signed-in yet
-        signInContainer.style.display = 'block';
-        profileContainer.style.display = 'none';
-      } else {
-        // already signed-in: check if profile complete
-        const snap = await getDoc(doc(db,'users',user.uid));
-        const d    = snap.data() || {};
-        if (!d.role) {
-          // show profile form
-          inpName.value = d.name || '';
-          signInContainer.style.display = 'none';
-          profileContainer.style.display = 'block';
-        } else {
-          // profile already done → go dashboard
-          location.href = 'dashboard.html';
-        }
-      }
-    });
-  </script>
 </body>
 </html>
