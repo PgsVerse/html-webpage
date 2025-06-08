@@ -11,63 +11,96 @@
   <nav class="navbar">
     <div class="container">
       <a href="index.html" class="logo">PGSVerse</a>
-      <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="signin.html">Sign In</a></li>
-        <li><a href="dashboard.html">Dashboard</a></li>
-      </ul>
+     <ul class="nav-links" id="nav-links">
+  <!-- Navbar will load here -->
+</ul>
+
     </div>
   </nav>
 
-  <!-- GOSSIPVERSE -->
+  <!-- GOSSIP FORM -->
   <section class="section alt" style="padding-top:6rem;">
     <div class="container">
       <h2>GossipVerse</h2>
-      <p>Spill all the tea—drop your juiciest campus hot-takes & rumors. (Sign-in required.)</p>
+      <p>Spill your tea anonymously. It goes to admin — you earn <strong>100 VCoins</strong> instantly!</p>
 
       <div class="form-card">
-        <textarea id="gossipInput" rows="4" placeholder="Your gossip…"></textarea>
-        <!-- this is now a real button -->
-        <button id="postGossipBtn" type="button" class="btn">Post Gossip</button>
+        <textarea id="gossipInput" rows="4" placeholder="Type your gossip…"></textarea>
+        <button id="postGossipBtn" type="button" class="btn">Send Gossip</button>
       </div>
     </div>
   </section>
 
+  <!-- FIREBASE + SCRIPT -->
   <script type="module">
-    // Firebase imports
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-auth.js";
-    // Your config + init (same as before)
-    const firebaseConfig = { /* … */ };
-    const app  = initializeApp(firebaseConfig);
+    import { getAuth } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-auth.js";
+    import {
+      getFirestore, doc, updateDoc, increment, getDoc
+    } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDuoQs8ntO6ityQsMeMwMulk9mO2m4ScVI",
+      authDomain: "verse-96d1b.firebaseapp.com",
+      projectId: "verse-96d1b",
+      storageBucket: "verse-96d1b.appspot.com",
+      messagingSenderId: "442515393829",
+      appId: "1:442515393829:web:049678d9cb119d4146decc",
+      measurementId: "G-3C74806Q83"
+    };
+
+    const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
 
-    // Hook the button
-    document.getElementById('postGossipBtn').addEventListener('click', postGossip);
+    const scriptURL = "https://script.google.com/macros/s/AKfycbyyOXI1bOKodLPpfeRUK8fM04EfQ5-kzgge3YXL-3uD8OdWl-rHUwomW29Yn6gGVVyD/exec";
 
-    async function postGossip() {
-      const text = document.getElementById('gossipInput').value.trim();
-      if (!text) return alert('Type something!');
+    async function updateVCoins(amount) {
       const user = auth.currentUser;
-      if (!user) return alert('Please sign in first.');
-      // call your Apps Script endpoint (make sure API_URL is set)
-      const res = await fetch(`${API_URL}?path=gossip`, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({
-          userId: user.uid,
-          userName: user.displayName,
-          text
-        })
+      if (!user) return;
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, {
+        vcoins: increment(amount)
       });
-      const json = await res.json();
-      if (json.status === 'ok') {
-        alert('Gossip submitted! ☕');
-        document.getElementById('gossipInput').value = '';
-      } else {
-        alert('Error: ' + (json.error||'unknown'));
-      }
     }
+
+    document.getElementById("postGossipBtn").addEventListener("click", async () => {
+      const gossip = document.getElementById("gossipInput").value.trim();
+      const user = auth.currentUser;
+      if (!user) return alert("Please sign in first.");
+      if (!gossip) return alert("Type something first!");
+
+      try {
+        // Fetch user's name from Firestore
+        const userRef = doc(db, "users", user.uid);
+        const snap = await getDoc(userRef);
+        const data = snap.data() || {};
+        const name = data.name || "Anonymous";
+        const now = new Date().toLocaleString("en-IN");
+
+        // Send to App Script
+        const formData = new FormData();
+        formData.append("gossip", gossip);
+        formData.append("email", user.email);
+        formData.append("username", name);
+        formData.append("timestamp", now);
+
+        await fetch(scriptURL, {
+          method: "POST",
+          body: formData
+        });
+
+        await updateVCoins(100);
+        alert("🔥 Gossip sent! You earned +100 VCoins!");
+        document.getElementById("gossipInput").value = "";
+
+      } catch (err) {
+        alert("Error sending gossip. Try again.");
+        console.error(err);
+      }
+    });
   </script>
+  <script type="module" src="js/navbar.js"></script>
+
 </body>
 </html>
