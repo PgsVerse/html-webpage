@@ -5,29 +5,442 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>LoungeVerse</title>
   <link rel="stylesheet" href="css/style.css"/>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
+  <style>
+    body {
+      background: #0f0f0f;
+      font-family: 'Segoe UI', sans-serif;
+      color: white;
+      margin: 0;
+      padding: 0;
+    }
+    .center-card {
+      max-width: 500px;
+      background: #1a1a1a;
+      margin: 7rem auto;
+      padding: 2rem;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 0 25px rgba(0, 255, 200, 0.1);
+      border: 1px solid #222;
+    }
+    .center-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .center-card p {
+      font-size: 0.95rem;
+      color: #bbb;
+      margin-bottom: 1.5rem;
+    }
+    button {
+      padding: 10px 24px;
+      font-size: 1rem;
+      background: #00ffc3;
+      color: black;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .form-card textarea {
+      width: 100%;
+      border-radius: 8px;
+      padding: 10px;
+      background: #111;
+      color: #fff;
+      border: 1px solid #333;
+    }
+    .confession-box {
+      background: #1e1e1e;
+      margin-bottom: 1.2rem;
+      padding: 1rem;
+      border-radius: 10px;
+      text-align: left;
+      box-shadow: 0 0 10px rgba(0,255,200,0.05);
+    }
+    .confession-meta {
+      font-size: 0.8rem;
+      color: #888;
+      margin-top: 0.5rem;
+    }
+    .reacts {
+      margin-top: 0.8rem;
+      font-size: 1.1rem;
+    }
+    .reacts span {
+      margin-right: 15px;
+      cursor: pointer;
+      user-select: none;
+    }
+  </style>
 </head>
 <body>
-  <!-- NAVBAR -->
   <nav class="navbar">
     <div class="container">
       <a href="index.html" class="logo">PGSVerse</a>
-      <ul class="nav-links" id="nav-links">
-  <!-- Navbar will load here -->
-</ul>
-
+      <ul class="nav-links" id="nav-links"></ul>
     </div>
   </nav>
 
-  <section class="section alt" style="padding-top:6rem;">
-    <div class="container">
-      <h2>LoungeVerse</h2>
-      <p>This area is locked until you have 25,000 Vcoins. Earn 5× coins here once unlocked!</p>
-      <button class="btn" onclick="unlockLounge()">Unlock LoungeVerse</button>
+  <div id="lounge-locked" class="center-card" style="display: none;">
+    <h2>🔒 LoungeVerse is Locked</h2>
+      <p>You need <strong>25,000 VCoins</strong> to unlock this VIP zone for 30 days.</p>
+    <button onclick="unlockLoungeVerse()">Unlock LoungeVerse</button>
+  </div>
+
+  <div id="lounge-unlocked" class="center-card" style="display: none;">
+    <h2>✨ Welcome to LoungeVerse</h2>
+      <p>You're in the elite zone now. More features coming soon…</p>
+      <p id="mask-display" style="color:#bbb; font-size: 0.9rem; margin-top: 1rem;"></p>
+
+    <hr style="margin: 2rem 0; border-color: #333;">
+
+    <h3>💬 Confession Wall</h3>
+    
+
+    <div class="form-card">
+      <textarea id="confessionInput" rows="4" placeholder="Your secret stays here..."></textarea>
+      <br/>
+      <button onclick="postConfession()">Submit Confession</button>
     </div>
-  </section>
 
-  <script src="js/main.js"></script>
+    <div id="confessionFeed" style="margin-top: 2rem;"></div>
+
+
+    <hr style="margin: 2rem 0; border-color: #333;">
+      <h3>💋 Confession Gossip</h3>
+        <div id="adminGossipForm" style="display: none; margin-bottom: 2rem;">
+          <textarea id="gossipInput" rows="3" placeholder="Post an exclusive gossip..."></textarea>
+          <br/>
+          <button onclick="postGossip()">Post Gossip</button>
+        </div>
+
+    <div id="gossipWall"></div>
+
+    <hr style="margin: 2rem 0; border-color: #333;">
+      <h3>📤 Upload Daily Quiz (Admin Only)</h3>
+        <div id="adminQuizForm" style="display: none; margin-bottom: 2rem;">
+          <textarea id="quizQuestion" rows="2" placeholder="Enter today's quiz question..."></textarea><br/>
+          <input id="quizAnswer" type="text" placeholder="Correct answer" /><br/><br/>
+          <button onclick="uploadQuiz()">Post Quiz</button>
+        </div>
+
+    <h3>🧠 Daily Quiz</h3>
+      <div id="quizBox">
+        <p id="quizQ">Loading question...</p>
+        <p id="quizMsg" style="margin-top: 1rem;"></p>
+      </div>
+  </div>
+
+  
+
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+    import {
+      getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, increment
+    } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDuoQs8ntO6ityQsMeMwMulk9mO2m4ScVI",
+      authDomain: "verse-96d1b.firebaseapp.com",
+      projectId: "verse-96d1b",
+      storageBucket: "verse-96d1b.appspot.com",
+      messagingSenderId: "442515393829",
+      appId: "1:442515393829:web:049678d9cb119d4146decc",
+      measurementId: "G-3C74806Q83"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getFirestore(app);
+    const now = Date.now();
+    const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+
+    function generateMaskName() {
+      const adjectives = ["Broken", "Flirty", "Dark", "Loyal", "Secret", "Sad", "Cursed", "Midnight", "Lonely", "Ghostly"];
+      const nouns = ["Fox", "Tiger", "Ghost", "Soul", "Knight", "Vibe", "Freak", "Wolf", "Demon", "Blossom"];
+      const number = Math.floor(100 + Math.random() * 900);
+      return `${adjectives[Math.floor(Math.random() * adjectives.length)]}${nouns[Math.floor(Math.random() * nouns.length)]}-${number}`;
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const email = user.email;
+        const userRef = doc(db, "users", user.uid);
+        const snap = await getDoc(userRef);
+        const data = snap.data();
+        const loungeUnlocked = data?.loungeUnlocked || false;
+        const loungeExpiry = data?.loungeExpiry || 0;
+
+        if (email === "pgsverse@gmail.com") {
+          document.getElementById("lounge-unlocked").style.display = "block";
+          document.getElementById("mask-display").innerText = `🕶️ Admin Access (No Mask)`;
+          document.getElementById("adminGossipForm").style.display = "block";
+          document.getElementById("adminQuizForm").style.display = "block";
+
+          loadConfessions();
+          loadGossips();
+          loadQuiz();
+
+          return;
+        } 
+
+        if (!data?.maskName) {
+          const newMask = generateMaskName();
+          await updateDoc(userRef, { maskName: newMask });
+        }
+
+        const mask = data?.maskName || "Loading...";
+
+        if (loungeUnlocked && loungeExpiry > now) {
+          document.getElementById("lounge-unlocked").style.display = "block";
+          document.getElementById("mask-display").innerText = `🕶️ Mask: ${mask}`;
+          loadConfessions();
+          loadGossips();      // ✅ now shows gossip
+          loadQuiz();         // ✅ now shows quiz
+
+        } else {
+          document.getElementById("lounge-locked").style.display = "block";
+          if (loungeExpiry < now) {
+            await updateDoc(userRef, { loungeUnlocked: false });
+          }
+        }
+      }
+    });
+
+    window.unlockLoungeVerse = async function () {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const userRef = doc(db, "users", user.uid);
+      const snap = await getDoc(userRef);
+      const data = snap.data();
+      const currentVCoins = data?.vcoins || 0;
+
+      if (currentVCoins >= 25000) {
+        const newExpiry = Date.now() + THIRTY_DAYS;
+        const mask = data?.maskName || generateMaskName();
+        await updateDoc(userRef, {
+          vcoins: currentVCoins - 25000,
+          loungeUnlocked: true,
+          loungeExpiry: newExpiry,
+          maskName: mask
+        });
+        alert("✅ LoungeVerse unlocked for 30 days!");
+        location.reload();
+      } else {
+        alert("❌ Not enough VCoins!");
+      }
+    };
+
+    window.postConfession = async function () {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const confession = document.getElementById("confessionInput").value.trim();
+      if (!confession) return alert("Type your confession!");
+
+      const userRef = doc(db, "users", user.uid);
+      const snap = await getDoc(userRef);
+      const data = snap.data();
+      const mask = data?.maskName || "Anonymous";
+
+      const postID = `${Date.now()}_${user.uid}`;
+      await setDoc(doc(db, "confessions", postID), {
+        text: confession,
+        timestamp: Date.now(),
+        maskName: mask,
+        reacts: { heart: 0, fire: 0, skull: 0 },
+        reactedBy: {}
+      });
+
+      alert("✅ Confession posted anonymously!");
+      document.getElementById("confessionInput").value = "";
+      loadConfessions();
+      // Reward user with +169 VCoins
+      await updateDoc(userRef, {
+      vcoins: increment(169)
+      });
+
+      };
+    
+    window.postGossip = async function () {
+      const user = auth.currentUser;
+      if (!user || user.email !== "pgsverse@gmail.com") return;
+
+      const gossip = document.getElementById("gossipInput").value.trim();
+      if (!gossip) return alert("Type your gossip!");
+
+      await setDoc(doc(db, "gossipConfession", `${Date.now()}`), {
+      gossipText: gossip,
+      postedBy: "PGSV Admin",
+      timestamp: Date.now()
+      });
+
+      document.getElementById("gossipInput").value = "";
+      alert("✅ Gossip posted!");
+      loadGossips();
+      };
+ 
+
+      // 👇 PASTE THIS HERE (Step 3)
+    window.uploadQuiz = async function () {
+      const question = document.getElementById("quizQuestion").value.trim();
+      const answer = document.getElementById("quizAnswer").value.trim();
+      if (!question || !answer) return alert("Please fill out both fields!");
+
+      const today = new Date().toISOString().split("T")[0];
+      await setDoc(doc(db, "dailyQuiz", today), {
+  question: question,
+  correct: answer.toLowerCase().trim(),
+  deleteAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 🔥 TTL auto-delete after 24h
+});
+
+
+      alert("✅ Daily quiz posted!");
+      document.getElementById("quizQuestion").value = "";
+      document.getElementById("quizAnswer").value = "";
+      };
+    async function loadGossips() {
+  const gossipWall = document.getElementById("gossipWall");
+  gossipWall.innerHTML = "";
+
+  const qSnap = await getDocs(collection(db, "gossipConfession"));
+  const all = [];
+  qSnap.forEach(doc => all.push({ ...doc.data() }));
+  all.sort((a, b) => b.timestamp - a.timestamp);
+
+  all.forEach((g) => {
+    const time = new Date(g.timestamp).toLocaleString("en-IN");
+    gossipWall.innerHTML += `
+      <div class="confession-box">
+        <b>💬 Gossip:</b><br> ${g.gossipText}
+        <div class="confession-meta">By ${g.postedBy} • ${time}</div>
+      </div>
+    `;
+  });
+
+  
+}
+
+async function loadQuiz() {
+  const today = new Date().toISOString().split("T")[0];
+  const quizRef = doc(db, "dailyQuiz", today);
+  const quizSnap = await getDoc(quizRef);
+
+  if (!quizSnap.exists()) {
+    document.getElementById("quizBox").innerHTML = "🚧 No quiz for today yet!";
+    return;
+  }
+
+  const quizData = quizSnap.data();
+  const user = auth.currentUser;
+  const userID = user.uid;
+
+  const attemptRef = doc(db, "quizResponses", `${userID}_${today}`);
+  const attemptSnap = await getDoc(attemptRef);
+
+  if (attemptSnap.exists()) {
+    const a = attemptSnap.data();
+    document.getElementById("quizBox").innerHTML = `
+      <p>✅ You already answered today's quiz.</p>
+      <p>🧠 Correct Answer: <b>${quizData.correct}</b></p>
+      <p>💸 VCoins: ${a.correct ? "+100" : "0"}</p>
+    `;
+    return; 
+  }
+
+  document.getElementById("quizBox").innerHTML = `
+    <p>${quizData.question}</p>
+    <input type="text" id="userAnswer" placeholder="Type your answer..." />
+    <br/><br/>
+    <button onclick="submitQuizAnswer('${today}', '${quizData.correct}')">Submit</button>
+    <p id="quizMsg"></p>
+  `;
+}
+
+window.submitQuizAnswer = async function (today, correct) {
+  const user = auth.currentUser;
+  const answer = document.getElementById("userAnswer").value.trim().toLowerCase();
+  const isCorrect = answer === correct.toLowerCase();
+  const userID = user.uid;
+
+  const attemptRef = doc(db, "quizResponses", `${userID}_${today}`);
+  await setDoc(attemptRef, {
+    uid: userID,
+    answer: answer,
+    correct: isCorrect,
+    timestamp: Date.now()
+  });
+
+  if (isCorrect) {
+    await updateDoc(doc(db, "users", userID), { vcoins: increment(100) });
+  }
+
+  document.getElementById("quizMsg").innerText = isCorrect
+    ? "✅ Correct! +100 VCoins!"
+    : `❌ Wrong! Correct Answer: ${correct}`;
+    
+
+};
+
+
+
+    window.reactToPost = async function (postId, type) {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const ref = doc(db, "confessions", postId);
+      const snap = await getDoc(ref);
+      const data = snap.data();
+      const already = data?.reactedBy?.[user.uid];
+
+      if (already) return alert("You already reacted to this!");
+
+      const updates = {
+        [`reacts.${type}`]: increment(1),
+        [`reactedBy.${user.uid}`]: type
+      };
+
+      await updateDoc(ref, updates);
+      loadConfessions();
+    };
+
+    async function loadConfessions() {
+      const confessionFeed = document.getElementById("confessionFeed");
+      confessionFeed.innerHTML = "";
+
+      const qSnap = await getDocs(collection(db, "confessions"));
+      const all = [];
+      qSnap.forEach(doc => all.push({ id: doc.id, ...doc.data() }));
+      all.sort((a, b) => b.timestamp - a.timestamp);
+
+      all.forEach((c) => {
+        const time = new Date(c.timestamp).toLocaleString("en-IN");
+        const reacts = c.reacts || { heart: 0, fire: 0, skull: 0 };
+
+        const box = `
+          <div class="confession-box">
+            ${c.text}
+            <div class="confession-meta">🕶️ ${c.maskName} • ${time}</div>
+            <div class="reacts">
+              <span onclick="reactToPost('${c.id}', 'heart')">❤️ ${reacts.heart}</span>
+              <span onclick="reactToPost('${c.id}', 'fire')">🔥 ${reacts.fire}</span>
+              <span onclick="reactToPost('${c.id}', 'skull')">💀 ${reacts.skull}</span>
+            </div>
+          </div>
+        `;
+        confessionFeed.innerHTML += box;
+      });
+    }
+
+    
+  </script>
   <script type="module" src="js/navbar.js"></script>
-
 </body>
 </html>
