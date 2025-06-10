@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Badges | PGSVerse</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 2rem;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    .badge-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+    .badge-card {
+      background: #1e1e1e;
+      border-radius: 10px;
+      padding: 1rem;
+      text-align: center;
+      box-shadow: 0 0 10px #00ffcc55;
+      transition: transform 0.2s;
+    }
+    .badge-card:hover {
+      transform: scale(1.05);
+    }
+    .badge-icon {
+      font-size: 2.5rem;
+    }
+    .badge-name {
+      font-weight: bold;
+      margin-top: 0.5rem;
+    }
+    .badge-desc {
+      font-size: 0.9rem;
+      color: #aaa;
+      margin-top: 0.2rem;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="logo">PGSVerse</a>
+      <ul class="nav-links" id="nav-links">
+  <!-- Navbar will load here -->
+</ul>
+
+    </div>
+  </nav>
+  <br><br><br>
+  <h1>🏅 My Badges</h1>
+  <div class="badge-grid" id="badgeGrid">
+    <p>Loading badges...</p>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    // your config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDuoQs8ntO6ityQsMeMwMulk9mO2m4ScVI",
+      authDomain: "verse-96d1b.firebaseapp.com",
+      projectId: "verse-96d1b",
+      storageBucket: "verse-96d1b.appspot.com",
+      messagingSenderId: "442515393829",
+      appId: "1:442515393829:web:e66ad9b51225f70f42a748"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const badgeGrid = document.getElementById("badgeGrid");
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+        const userData = userSnap.data();
+        const userBadges = userData.userBadges || [];
+
+        badgeGrid.innerHTML = ""; // clear loading text
+
+        if (userBadges.length === 0) {
+          badgeGrid.innerHTML = "<p>You don’t have any badges yet 😢</p>";
+          return;
+        }
+
+        for (const badgeId of userBadges) {
+          const badgeRef = doc(db, "badges", badgeId);
+          const badgeSnap = await getDoc(badgeRef);
+          if (badgeSnap.exists()) {
+            const badge = badgeSnap.data();
+            badgeGrid.innerHTML += `
+              <div class="badge-card">
+                <div class="badge-icon">${badge.icon}</div>
+                <div class="badge-name">${badge.name}</div>
+                <div class="badge-desc">${badge.description}</div>
+              </div>`;
+          }
+        }
+      } else {
+        badgeGrid.innerHTML = "<p>Please sign in to view your badges.</p>";
+      }
+    });
+  </script>
+    <script type="module" src="js/navbar.js"></script>
+
+</body>
+</html>
