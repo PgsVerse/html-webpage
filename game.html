@@ -1,38 +1,326 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>GameVerse</title>
-  <link rel="stylesheet" href="css/style.css"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EventVerse</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .event-box {
+      background: #1e1e1e;
+      color: white;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 10px;
+    }
+    .event-meta {
+      font-size: 0.85rem;
+      color: #bbb;
+      margin-top: 0.4rem;
+    }
+    .btn {
+      background: #00ffcc;
+      color: black;
+      padding: 6px 14px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .btn:hover {
+      background: #00c2a6;
+    }
+    .form-field {
+      background: #1e1e1e;
+      color: white;
+      border: 1px solid #333;
+      padding: 8px;
+      border-radius: 6px;
+      margin: 6px 0;
+      width: 100%;
+      max-width: 250px;
+    }
+  </style>
 </head>
 <body>
-  <!-- NAVBAR -->
   <nav class="navbar">
     <div class="container">
       <a href="index.html" class="logo">PGSVerse</a>
-      <ul class="nav-links" id="nav-links">
-  <!-- Navbar will load here -->
-</ul>
-
+      <ul class="nav-links" id="nav-links"></ul>
     </div>
   </nav>
 
-  <section class="section" style="padding-top:6rem;">
+  <section class="section alt" style="padding-top: 6rem;">
     <div class="container">
-      <h2>GameVerse</h2>
-      <p>Solve today’s riddle to earn 50 Vcoins. No penalty if you miss!</p>
+      <h2>EventVerse</h2>
+      <p>Compete in creative contests, quizzes, and challenges to earn VCoins and glory.</p>
 
-      <div class="form-card">
-        <p id="riddleText">What has keys but can’t open locks?</p>
-        <input type="text" id="riddleAnswer" placeholder="Your answer…"/>
-        <button class="btn" onclick="submitRiddle()">Submit Answer</button>
+      <div id="adminUpload" style="margin: 30px 0; display: none;">
+        <h4 style="color: #00ffcc;">Create New Event (Admin)</h4>
+        <input id="eventHeading" placeholder="Event Heading" class="form-field" />
+        <input id="eventSubheading" placeholder="Subheading / Description" class="form-field" />
+        <select id="eventType" class="form-field">
+          <option value="live">🔴 Live</option>
+          <option value="upcoming">🟢 Upcoming</option>
+          <option value="past">⚪ Past</option>
+        </select>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <input type="number" id="reward1" placeholder="1st Reward" class="form-field" />
+          <input type="number" id="reward2" placeholder="2nd Reward" class="form-field" />
+          <input type="number" id="reward3" placeholder="3rd Reward" class="form-field" />
+          <input type="number" id="restReward" placeholder="Others Reward" class="form-field" />
+          <input type="number" id="fee" placeholder="Participation Fee" class="form-field" />
+        </div>
+        <button class="btn" id="createEventBtn">Post Event</button>
       </div>
 
-      <div id="riddleResponse"></div>
+      <div id="adminQuizUpload" style="margin: 40px 0; display: none;">
+        <h4 style="color: #ff1ed2;">🧠 Schedule Daily Quiz (Admin)</h4>
+        <input id="quizQ" placeholder="Quiz Question" class="form-field" />
+        <input id="opt1" placeholder="Option 1" class="form-field" />
+        <input id="opt2" placeholder="Option 2" class="form-field" />
+        <input id="opt3" placeholder="Option 3" class="form-field" />
+        <input id="opt4" placeholder="Option 4" class="form-field" />
+        <input id="correctAns" placeholder="Correct Answer" class="form-field" />
+        <input id="quizDate" type="date" class="form-field" />
+        <button class="btn" id="scheduleQuizBtn">Schedule Quiz</button>
+      </div>
+
+      <div class="event-section">
+        <h3 style="color: #00ffcc;">🔴 Live Events</h3>
+        <div id="liveEvents"></div>
+      </div>
+
+      <div class="event-section">
+        <h3 style="color: #ff1ed2;">🟢 Upcoming Events</h3>
+        <div id="upcomingEvents"></div>
+      </div>
+
+      <div class="event-section">
+        <h3 style="color: #aaaaff;">⚪ Past Events</h3>
+        <div id="pastEvents"></div>
+      </div>
+
+      <hr style="border-color: #444; margin: 3rem 0;" />
+      <h3 style="color: #ff1ed2;">🧠 Daily Quiz</h3>
+      <div id="quizContainer" class="event-box">
+        <p id="quizQuestion">Loading...</p>
+        <div id="quizOptions"></div>
+        <button class="btn" id="submitAnswerBtn" style="margin-top: 10px;">Submit</button>
+        <p id="quizResult" style="margin-top: 10px; color: #00ffcc;"></p>
+      </div>
     </div>
   </section>
-  <script type="module" src="js/navbar.js"></script>
 
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, doc, getDoc, getDocs, query, orderBy, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDuoQs8ntO6ityQsMeMwMulk9mO2m4ScVI",
+      authDomain: "verse-96d1b.firebaseapp.com",
+      projectId: "verse-96d1b",
+      storageBucket: "verse-96d1b.appspot.com",
+      messagingSenderId: "442515393829",
+      appId: "1:442515393829:web:049678d9cb119d4146decc"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const adminEmails = ["pgsverse@gmail.com"];
+
+    const liveDiv = document.getElementById("liveEvents");
+    const upcomingDiv = document.getElementById("upcomingEvents");
+    const pastDiv = document.getElementById("pastEvents");
+    const adminUpload = document.getElementById("adminUpload");
+    const createBtn = document.getElementById("createEventBtn");
+    const quizUploadBox = document.getElementById("adminQuizUpload");
+    const scheduleBtn = document.getElementById("scheduleQuizBtn");
+
+    const quizContainer = document.getElementById("quizContainer");
+    const quizQuestionEl = document.getElementById("quizQuestion");
+    const quizOptionsEl = document.getElementById("quizOptions");
+    const submitBtn = document.getElementById("submitAnswerBtn");
+    const quizResultEl = document.getElementById("quizResult");
+
+    let currentUser = null;
+    let currentQuiz = null;
+
+    function renderEvent(data, container) {
+      const div = document.createElement("div");
+      div.className = "event-box";
+      div.innerHTML = `
+        <h4 style="font-size: 1.1rem; font-weight: bold;">${data.heading}</h4>
+        <p>${data.subheading}</p>
+        <p class="event-meta">
+          1st: +${data.reward1} VC | 2nd: +${data.reward2} | 3rd: +${data.reward3} | Others: +${data.restReward} | Fee: ${data.participationFee} VC
+        </p>
+        <p class="event-meta">Posted: ${new Date(data.timestamp.toDate()).toLocaleString()}</p>
+        <button class="btn">Participate</button>
+      `;
+      container.appendChild(div);
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return;
+      currentUser = user;
+
+    const allQuizzes = await getDocs(collection(db, "dailyQuiz"));
+const now = new Date();
+allQuizzes.forEach(async (q) => {
+  const quizDate = new Date(q.id);
+  if (now - quizDate > 24 * 60 * 60 * 1000) {
+    await deleteDoc(doc(db, "dailyQuiz", q.id));
+  }
+});
+
+      if (adminEmails.includes(user.email)) {
+        adminUpload.style.display = "block";
+        quizUploadBox.style.display = "block";
+      }
+
+      const today = new Date().toISOString().split("T")[0];
+      const quizRef = doc(db, "dailyQuiz", today);
+      const quizDoc = await getDoc(quizRef);
+      if (!quizDoc.exists()) return;
+
+      currentQuiz = quizDoc.data();
+      const userAnsRef = doc(db, "quizAnswers", `${user.uid}_${today}`);
+      const existingAns = await getDoc(userAnsRef);
+
+      if (existingAns.exists()) {
+        quizQuestionEl.innerText = `You already answered today's quiz.`;
+        quizOptionsEl.innerHTML = `Your Answer: <b>${existingAns.data().answer}</b><br>Correct: <b>${currentQuiz.answer}</b>`;
+        submitBtn.style.display = "none";
+        return;
+      }
+
+      quizQuestionEl.innerText = currentQuiz.question;
+      quizOptionsEl.innerHTML = currentQuiz.options.map(opt => `
+        <label><input type="radio" name="quizOpt" value="${opt}"> ${opt}</label>
+      `).join("");
+    });
+
+    submitBtn.addEventListener("click", async () => {
+      const selected = document.querySelector('input[name="quizOpt"]:checked');
+      if (!selected || !currentUser) return alert("Choose an option!");
+
+      const answer = selected.value;
+      const today = new Date().toISOString().split("T")[0];
+      const answerRef = doc(db, "quizAnswers", `${currentUser.uid}_${today}`);
+
+      const correct = (answer === currentQuiz.answer);
+
+      const allTodayAnswers = await getDocs(query(collection(db, "quizAnswers")));
+      const position = allTodayAnswers.docs.filter(d => d.id.endsWith(today) && d.data().correct).length + 1;
+
+      let reward = 0;
+      if (correct) {
+        if (position === 1) reward = 50;
+        else if (position === 2) reward = 35;
+        else if (position === 3) reward = 25;
+        else if (position === 4) reward = 20;
+        else reward = 15;
+      }
+
+      await setDoc(answerRef, {
+        user: currentUser.displayName || currentUser.email,
+        answer,
+        correct,
+        reward,
+        timestamp: Date.now()
+      });
+
+      if (correct && reward > 0) {
+  const userRef = doc(db, "users", currentUser.uid);
+  const userSnap = await getDoc(userRef);
+  const prev = userSnap.exists() ? userSnap.data().vc || 0 : 0;
+  await setDoc(userRef, {
+    vc: prev + reward,
+    name: currentUser.displayName || currentUser.email
+  }, { merge: true });
+}
+
+
+      if (correct) {
+        quizResultEl.innerText = `✅ Correct! You earned ${reward} VCoins.\nAnswer: ${currentQuiz.answer}`;
+      } else {
+        quizResultEl.innerText = `❌ Wrong answer. Correct was: ${currentQuiz.answer}. No VCoins awarded.`;
+      }
+
+      quizOptionsEl.style.display = "none";
+      submitBtn.style.display = "none";
+    });
+
+    scheduleBtn.addEventListener("click", async () => {
+      const question = document.getElementById("quizQ").value.trim();
+      const options = [
+        document.getElementById("opt1").value.trim(),
+        document.getElementById("opt2").value.trim(),
+        document.getElementById("opt3").value.trim(),
+        document.getElementById("opt4").value.trim()
+      ];
+      const answer = document.getElementById("correctAns").value.trim();
+      const date = document.getElementById("quizDate").value;
+
+      if (!question || options.includes("") || !answer || !date) {
+        alert("Fill all quiz fields!");
+        return;
+      }
+
+      await setDoc(doc(db, "dailyQuiz", date), {
+        question,
+        options,
+        answer,
+        date
+      });
+
+      alert(`Quiz scheduled for ${date}`);
+    });
+
+    createBtn.addEventListener("click", async () => {
+      const heading = document.getElementById("eventHeading").value.trim();
+      const subheading = document.getElementById("eventSubheading").value.trim();
+      const type = document.getElementById("eventType").value;
+      const reward1 = +document.getElementById("reward1").value;
+      const reward2 = +document.getElementById("reward2").value;
+      const reward3 = +document.getElementById("reward3").value;
+      const restReward = +document.getElementById("restReward").value;
+      const participationFee = +document.getElementById("fee").value;
+      if (!heading || !subheading) return alert("Fill all fields");
+
+      await addDoc(collection(db, "events"), {
+        heading,
+        subheading,
+        type,
+        reward1,
+        reward2,
+        reward3,
+        restReward,
+        participationFee,
+        timestamp: new Date()
+      });
+
+      alert("Event Posted!");
+    });
+
+    const q = query(collection(db, "events"), orderBy("timestamp", "desc"));
+    onSnapshot(q, (snapshot) => {
+      liveDiv.innerHTML = "";
+      upcomingDiv.innerHTML = "";
+      pastDiv.innerHTML = "";
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.type === "live") renderEvent(data, liveDiv);
+        else if (data.type === "upcoming") renderEvent(data, upcomingDiv);
+        else if (data.type === "past") renderEvent(data, pastDiv);
+      });
+    });
+  </script>
+
+  <script type="module" src="js/navbar.js"></script>
 </body>
 </html>
