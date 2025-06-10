@@ -31,10 +31,50 @@ const gossipText = document.getElementById("gossip-text");
 onAuthStateChanged(auth, (user) => {
   if (user && user.email === "pgsverse@gmail.com") {
     adminPanel.style.display = "block";
+
+    postBtn.addEventListener("click", async () => {
+      const text = gossipText.value.trim();
+      if (!text) return alert("Please paste some gossip.");
+
+      try {
+        const gossipDoc = await addDoc(collection(db, "gossips"), {
+          content: text,
+          postedAt: serverTimestamp()
+        });
+
+        await addDoc(collection(db, "notifications"), {
+          userId: "all",
+          content: "🔥 New gossip uploaded!",
+          type: "gossip",
+          relatedId: gossipDoc.id,
+          createdAt: serverTimestamp(),
+          seen: false
+        });
+
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+        const userData = userSnap.data();
+
+        await updateDoc(userRef, {
+          gossipsPosted: (userData.gossipsPosted || 0) + 1
+        });
+
+        await checkAndGiveBadges(user.uid);
+
+        alert("Gossip posted, notification sent, badge checked ✅");
+        gossipText.value = "";
+
+      } catch (err) {
+        console.error("Error posting gossip:", err);
+        alert("Something went wrong: " + err.message);
+      }
+    });
+
   } else {
     notAllowed.style.display = "block";
   }
 });
+
 
 // Post gossip + give badges
 postBtn.addEventListener("click", async () => {
