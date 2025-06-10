@@ -39,6 +39,8 @@
       <p><strong>Class:</strong>  <span id="profClass"></span></p>
       <p><strong>Vcoins:</strong> <span id="profCoins"></span></p>
       <p><strong>Badges:</strong> <span id="profBadges"></span></p>
+      
+      <a href="badges.html" class="btn">View All Badges</a>
 
       <!-- 🪙 Welcome Bonus Button -->
       <div style="margin-top: 20px;">
@@ -145,6 +147,8 @@
       document.getElementById('profClass').textContent  = d.class;
       document.getElementById('profCoins').textContent  = d.vcoins;
       document.getElementById('profBadges').textContent = (d.badges || []).join(', ') || 'None';
+
+
 
       // 🎁 Hide claim button if used
       if (d.claimedWelcomeBonus) {
