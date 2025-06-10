@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>The Verse Guidebook</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    details {
+      background: #1a1a1a;
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      margin-bottom: 1.2rem;
+      box-shadow: 0 0 0 1px #2a2a2a;
+      cursor: pointer;
+    }
+    summary {
+      font-weight: 600;
+      font-size: 1.05rem;
+      color: #f0f0f0;
+      outline: none;
+    }
+    summary::marker {
+      color: #3d9df6;
+    }
+    details[open] {
+      background: #1f1f1f;
+    }
+    details p, details ul {
+      margin-top: 0.75rem;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #cccccc;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="logo">PGSVerse</a>
+      <ul class="nav-links" id="nav-links"></ul>
+    </div>
+  </nav>
+
+  <section class="section" style="padding-top: 6rem;">
+    <div class="container">
+      <h2>The Verse Guidebook</h2>
+      <p>A digital manual for everything PGSVerse — tap to flip each section open 👇</p>
+
+      <div class="form-card">
+
+        <details open>
+          <summary>🚀 What & Who is PGSVerse?</summary>
+          <p>PGSVerse is not an admin, it’s not a teacher — it’s <strong>us, the students of Prachin Global School</strong>. We’re among you. Could be your classmate, your best friend, even the guy who copies from you 😜</p>
+          <p>This site was built for fun, chaos, and creativity — <strong>by students, for students</strong>.</p>
+        </details>
+
+        <details>
+          <summary>🎯 What’s the Point?</summary>
+          <p>PGSVerse is a full-on digital version of school fun — gossip, roast battles, events, flex, files, badges, leaderboards. Basically: <strong>entertainment + clout</strong>.</p>
+        </details>
+
+        <details>
+          <summary>📲 How to Get Started</summary>
+          <ul>
+            <li>Sign in using your Google account</li>
+            <li>Fill in your profile: name, class, role</li>
+            <li>You’ll land on your Dashboard where you’ll see your:  
+              <ul>
+                <li>Name & Email</li>
+                <li>Role + Class</li>
+                <li>🪙 VCoins</li>
+                <li>🎖️ Badges</li>
+              </ul>
+            </li>
+          </ul>
+        </details>
+
+        <details>
+          <summary>🪙 What Are VCoins?</summary>
+          <p>VCoins are like your digital reputation points. Earn them by doing cool stuff and flex on the leaderboard. In future, you can <strong>redeem badges, NFTs, even merch</strong> (maybe 👀).</p>
+          <ul>
+            <li>+100 for gossip</li>
+            <li>+50 for event wins</li>
+            <li>Daily bonuses, welcome gift, profile fill etc.</li>
+          </ul>
+        </details>
+
+        <details>
+          <summary>🎖️ What Are Badges?</summary>
+          <p>Badges = flex items. You can earn special ones like:</p>
+          <ul>
+            <li>“Gossip Master” after 10 worthy gossips</li>
+            <li>“Note Wizard” for top uploads</li>
+            <li>“Lounge Elite” for VIP access</li>
+          </ul>
+        </details>
+
+        <details>
+          <summary>🕵️ How to Use GossipVerse</summary>
+          <ul>
+            <li>Go to GossipVerse</li>
+            <li>Type your gossip anonymously</li>
+            <li>Click "Send Gossip"</li>
+            <li>Earn +100 VCoins instantly if it gets accepted</li>
+            <li>Be spicy, not boring 😉</li>
+          </ul>
+        </details>
+
+        <details>
+          <summary>🗨️ How TalkVerse Works</summary>
+          <p>TalkVerse = discussion threads. Admin starts the thread. You reply, debate, vibe, roast, confess, anything.</p>
+          <p><strong>Fun replies may earn VCoins. LoungeVerse has TalkVerse too, with 5x coin multiplier.</strong></p>
+        </details>
+
+        <details>
+          <summary>📘 You’re Reading the Guidebook</summary>
+          <p>This page you're on is the official PGSVerse handbook. Bookmark it if you’re new or get confused.</p>
+        </details>
+
+        <details>
+          <summary>🏆 Leaderboard</summary>
+          <p>Top 3 coin earners are shown publicly.</p>
+          <ul>
+            <li>Ranks are based on total VCoins</li>
+            <li>Top 3 get bonus coins every Sunday</li>
+          </ul>
+        </details>
+
+        <details>
+          <summary>🎉 EventVerse</summary>
+          <p>EventVerse hosts all the fun stuff — quizzes, riddles, mini games, roast rounds, PGS trivia etc.</p>
+          <ul>
+            <li>Every event = VCoin reward</li>
+            <li>Top scorers earn 50–100+ coins</li>
+            <li>New events posted regularly</li>
+          </ul>
+        </details>
+
+        <details>
+          <summary>🔐 LoungeVerse (VIP Only)</summary>
+          <p>Unlock LoungeVerse at 25,000+ coins. Inside you get:</p>
+          <ul>
+            <li>🔥 Spicy gossips (unfiltered)</li>
+            <li>❤️ Relationship reveals, fights, crushes</li>
+            <li>💬 LoungeTalk + LoungeEvents (5x VCoins!)</li>
+            <li>🎖️ VIP Lounge Badge</li>
+            <li>⚡ Updates earlier than anyone else</li>
+          </ul>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <script type="module" src="js/navbar.js"></script>
+</body>
+</html>
