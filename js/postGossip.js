@@ -29,7 +29,7 @@ const gossipText = document.getElementById("gossip-text");
 
 // Only show panel to admin
 onAuthStateChanged(auth, (user) => {
-  if (user && user.email === "pgsverse@gmail.com") {
+  if (user && user.email === "pgsverse@gmail.com, Gmb7320@gmail.com") {
     adminPanel.style.display = "block";
 
     postBtn.addEventListener("click", async () => {
